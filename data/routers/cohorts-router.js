@@ -11,13 +11,11 @@ router.post('/', async (req, res) => {
   } else {
     try {
       const addedCohort = await db('cohorts').insert(req.body);
-      console.log(addedCohort);
       try {
-        const newCohort = await db('cohorts')
+        const addedRecord = await db('cohorts')
           .where('id', addedCohort[0])
           .first();
-        console.log(newCohort);
-        res.status(201).json(newCohort);
+        res.status(201).json(addedRecord);
       } catch (err) {
         res.status(500).json({
           error: `There was an error while retrieving the added cohort data. ${err}`
@@ -37,7 +35,7 @@ router.get('/', async (req, res) => {
     res.status(200).json(cohorts);
   } catch (err) {
     res.status(500).json({
-      error: `There was an error while retrieving the cohorts. ${err}`
+      error: `There was an error while retrieving the cohorts data. ${err}`
     });
   }
 });
@@ -57,7 +55,7 @@ router.get('/:id', async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({
-      error: `There was an error while retrieving the cohort. ${err}`
+      error: `There was an error while retrieving the cohort data. ${err}`
     });
   }
 });
@@ -76,13 +74,49 @@ router.get('/:id/students', async (req, res) => {
       res.status(200).json(cohortStudents);
     } catch (err) {
       res.status(500).json({
-        error: `There was an error while retrieving the cohort's students. ${err}`
+        error: `There was an error while retrieving the cohort's students data. ${err}`
       });
     }
   } else {
     res.status(404).json({
       error: 'There is no cohort with the specified ID.'
     });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  const id = req.params.id;
+  const { name } = req.body;
+  if (!name) {
+    res.status(400).json({
+      error: 'Please provide the cohort changes you intend to make.'
+    });
+  } else {
+    try {
+      const updatedCohort = await db('cohorts')
+        .where({ id })
+        .update(req.body);
+      if (updatedCohort) {
+        try {
+          const updatedRecord = await db('cohorts')
+            .where({ id })
+            .first();
+          res.status(200).json(updatedRecord);
+        } catch (err) {
+          res.status(500).json({
+            error: `There was an error while retrieving the updated cohort data. ${err}`
+          });
+        }
+      } else {
+        res.status(404).json({
+          message: 'There is no cohort with the specified ID.'
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        error: `There was an error while updating the cohort data. ${err}`
+      });
+    }
   }
 });
 
