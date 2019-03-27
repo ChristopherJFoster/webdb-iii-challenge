@@ -120,4 +120,54 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const cohort = await db('cohorts')
+      .where({ id })
+      .first();
+    if (cohort) {
+      try {
+        const cohortStudents = await db('cohorts')
+          .join('students', 'cohorts.id', 'students.cohort_id')
+          .select('students.id')
+          .where('cohort_id', id);
+        if (cohortStudents.length > 0) {
+          res.status(400).json({
+            error:
+              'You may not delete a cohort which still has students assigned to it.'
+          });
+        } else {
+          try {
+            const numOfDeletedCohorts = await db('cohorts')
+              .where({ id })
+              .del();
+            if (numOfDeletedCohorts) {
+              res.status(200).json({
+                message: `Number of cohorts deleted: ${numOfDeletedCohorts}.`
+              });
+            }
+          } catch (err) {
+            res.status(500).json({
+              error: `There was an error while deleting the cohort. ${err}`
+            });
+          }
+        }
+      } catch (err) {
+        res.status(500).json({
+          error: `There was an error while checking whether the cohort has any students assigned to it. ${err}`
+        });
+      }
+    } else {
+      res.status(404).json({
+        error: 'There is no cohort with the specified ID.'
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      error: `There was an error while checking the project ID. ${err}`
+    });
+  }
+});
+
 module.exports = router;
