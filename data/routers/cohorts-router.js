@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
   const id = req.params.id;
   try {
     const cohort = await db('cohorts')
-      .where('id', id)
+      .where({ id })
       .first();
     if (cohort) {
       res.status(200).json(cohort);
@@ -63,14 +63,14 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/students', async (req, res) => {
   const id = req.params.id;
   const cohort = await db('cohorts')
-    .where('id', id)
+    .where({ id })
     .first();
   if (cohort) {
     try {
       const cohortStudents = await db('cohorts')
         .join('students', 'cohorts.id', 'students.cohort_id')
         .select('cohorts.name as Cohort', 'students.name as Student Name')
-        .where('cohort_id', id);
+        .where({ cohort_id: id });
       res.status(200).json(cohortStudents);
     } catch (err) {
       res.status(500).json({
@@ -131,7 +131,7 @@ router.delete('/:id', async (req, res) => {
         const cohortStudents = await db('cohorts')
           .join('students', 'cohorts.id', 'students.cohort_id')
           .select('students.id')
-          .where('cohort_id', id);
+          .where({ cohort_id: id });
         if (cohortStudents.length > 0) {
           res.status(400).json({
             error:
