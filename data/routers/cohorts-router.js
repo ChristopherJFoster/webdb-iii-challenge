@@ -62,4 +62,28 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/students', async (req, res) => {
+  const id = req.params.id;
+  const cohort = await db('cohorts')
+    .where('id', id)
+    .first();
+  if (cohort) {
+    try {
+      const cohortStudents = await db('cohorts')
+        .join('students', 'cohorts.id', 'students.cohort_id')
+        .select('cohorts.name as Cohort', 'students.name as Student Name')
+        .where('cohort_id', id);
+      res.status(200).json(cohortStudents);
+    } catch (err) {
+      res.status(500).json({
+        error: `There was an error while retrieving the cohort's students. ${err}`
+      });
+    }
+  } else {
+    res.status(404).json({
+      error: 'There is no cohort with the specified ID.'
+    });
+  }
+});
+
 module.exports = router;
