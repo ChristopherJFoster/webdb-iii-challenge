@@ -24,7 +24,6 @@ router.post('/', async (req, res) => {
       });
     }
   }
-
   try {
     const addedStudent = await db('students').insert(req.body);
     try {
@@ -56,7 +55,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   try {
     const student = await db('students')
       .where({ id })
@@ -84,9 +83,8 @@ router.get('/:id', async (req, res) => {
     });
   }
 });
-
 router.put('/:id', async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const { name, cohort_id } = req.body;
   if (!name && !cohort_id) {
     return res.status(400).json({
@@ -132,6 +130,28 @@ router.put('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error: `There was an error while updating the student data. ${err}`
+    });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const numOfDeletedStudents = await db('students')
+      .where({ id })
+      .del();
+    if (numOfDeletedStudents) {
+      res.status(200).json({
+        message: `Number of students deleted: ${numOfDeletedStudents}.`
+      });
+    } else {
+      res.status(404).json({
+        message: 'There is no student with the specified ID.'
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      error: `There was an error while deleting the student. ${err}`
     });
   }
 });

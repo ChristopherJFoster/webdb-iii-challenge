@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   try {
     const cohort = await db('cohorts')
       .where({ id })
@@ -85,7 +85,7 @@ router.get('/:id/students', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const { name } = req.body;
   if (!name) {
     res.status(400).json({
@@ -121,7 +121,7 @@ router.put('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   try {
     const cohort = await db('cohorts')
       .where({ id })
@@ -164,8 +164,8 @@ router.delete('/:id', async (req, res) => {
       });
     }
   } catch (err) {
-    return res.status(500).json({
-      error: `There was an error while checking the project ID. ${err}`
+    res.status(500).json({
+      error: `There was an error while checking the cohort ID. ${err}`
     });
   }
 });
