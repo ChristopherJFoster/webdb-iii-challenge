@@ -2,6 +2,33 @@ const db = require('../dbConfig.js');
 
 const router = require('express').Router();
 
+router.post('/', async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    res.status(400).json({
+      error: 'Please provide a student name.'
+    });
+  } else {
+    try {
+      const addedStudent = await db('students').insert(req.body);
+      try {
+        const addedRecord = await db('students')
+          .where('id', addedStudent[0])
+          .first();
+        res.status(201).json(addedRecord);
+      } catch (err) {
+        res.status(500).json({
+          error: `There was an error while retrieving the added student data. ${err}`
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        error: `There was an error while adding the student data. ${err}`
+      });
+    }
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const students = await db('students');
